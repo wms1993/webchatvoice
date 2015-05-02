@@ -1,0 +1,25 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+
+    <ListView
+        android:id="@+id/listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"/>
+
+    <com.wms.weixinchat.VoiceButton
+        android:id="@+id/voice_button"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="bottom"
+        android:layout_marginLeft="50dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginRight="50dp"
+        android:background="@drawable/btn_recoder_normal"
+        android:minHeight="0dp"
+        android:text="@string/str_pressed_speak"/>
+
+</LinearLayout>
