@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class DialogManager {
     private Dialog mDialog;
@@ -14,6 +15,7 @@ public class DialogManager {
     private ImageView mLevel;
     private TextView mTips;
     private ImageView mCancle;
+    private ImageView too_short;
 
     public DialogManager(Context context) {
         mContext = context;
@@ -33,6 +35,7 @@ public class DialogManager {
         mLevel = (ImageView) view.findViewById(R.id.level);
         mCancle = (ImageView) view.findViewById(R.id.cancle);
         mTips = (TextView) view.findViewById(R.id.recoder_tips);
+        too_short = (ImageView) view.findViewById(R.id.too_short);
 
         mDialog.show();
     }
@@ -68,6 +71,17 @@ public class DialogManager {
         if (mDialog != null && mDialog.isShowing()) {
             int resId = mContext.getResources().getIdentifier("v" + level, "drawable", mContext.getPackageName());
             mLevel.setImageResource(resId);
+        }
+    }
+
+    public void showShortDialog() {
+        if (mDialog != null && mDialog.isShowing()) {
+            Toast.makeText(mContext, "时间太短了", Toast.LENGTH_SHORT).show();
+            mIcon.setVisibility(View.GONE);
+            mLevel.setVisibility(View.GONE);
+            mCancle.setVisibility(View.GONE);
+            too_short.setVisibility(View.VISIBLE);
+            mTips.setText(mContext.getResources().getString(R.string.str_too_short));
         }
     }
 }

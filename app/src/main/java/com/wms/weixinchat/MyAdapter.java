@@ -13,11 +13,13 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyAdapter extends BaseAdapter {
+public class MyAdapter extends BaseAdapter implements MediaManager.OnRecoderPlayOk {
 
     private List<VoiceBean> voices = new ArrayList<VoiceBean>();
     private Context mContext;
     private ImageView laba;
+    private AnimationDrawable d;
+    private View animView;
 
     public MyAdapter(Context context) {
         this.mContext = context;
@@ -55,11 +57,15 @@ public class MyAdapter extends BaseAdapter {
         holder.bg_chat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (animView != null) {
+                    animView.setBackgroundResource(R.drawable.adj);
+                }
                 //设置动画
-                View animView = (View) view.findViewById(R.id.laba);
+                animView = (View) view.findViewById(R.id.laba);
                 animView.setBackgroundResource(R.drawable.voiceplay_anim);
-                AnimationDrawable d = (AnimationDrawable) animView.getBackground();
+                d = (AnimationDrawable) animView.getBackground();
                 d.start();
+                MediaManager.listener = MyAdapter.this;
                 MediaManager.playSound(voices.get(position).getmRecordPath());
             }
         });
@@ -68,6 +74,12 @@ public class MyAdapter extends BaseAdapter {
 
     public void setVoices(List<VoiceBean> voices) {
         this.voices = voices;
+    }
+
+    @Override
+    public void playOk() {
+        d.stop();
+        animView.setBackgroundResource(R.drawable.adj);
     }
 
     private class ViewHolder {

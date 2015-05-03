@@ -18,6 +18,7 @@ public class VoiceButton extends Button implements AudioManager.OnPreparedOkList
     private static final int STATE_RECORDING = 1;
     //准备取消状态
     private static final int STATE_WANT_CANCLE = 2;
+    private static final int DISMISS_DIALOG = 5;
     private final DialogManager dialogManager;
     private final AudioManager audioManager;
     private Context mContext;
@@ -27,20 +28,8 @@ public class VoiceButton extends Button implements AudioManager.OnPreparedOkList
     private boolean isRecording;
     //录音时间
     private double mRecordTime;
-    private Runnable updateVolumLevelRunnable = new Runnable() {
-        @Override
-        public void run() {
-            while (isRecording) {
-                try {
-                    Thread.sleep(100);
-                    mRecordTime = mRecordTime + 0.1;
-                    mHandler.sendEmptyMessage(UPDATE_LEVEL);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    };
+    //开始录音的时间
+    private long mStartTime;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -55,6 +44,24 @@ public class VoiceButton extends Button implements AudioManager.OnPreparedOkList
                     //如果一直处于录音状态，则更新音量，取消录音，不用更新了;
                     dialogManager.setVolumLevel(audioManager.getVolumLevel(7));
                     break;
+                case DISMISS_DIALOG:
+                    isRecording = false;
+                    dialogManager.dismissDialog();
+                    break;
+            }
+        }
+    };
+    private Runnable updateVolumLevelRunnable = new Runnable() {
+        @Override
+        public void run() {
+            while (isRecording) {
+                try {
+                    Thread.sleep(100);
+                    mRecordTime = mRecordTime + 0.1;
+                    mHandler.sendEmptyMessage(UPDATE_LEVEL);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     };
@@ -100,10 +107,17 @@ public class VoiceButton extends Button implements AudioManager.OnPreparedOkList
 //                }
                 break;
             case MotionEvent.ACTION_UP:
-                if (mCurrentStatus == STATE_RECORDING) {
+                //手指按下的时间小于0.6秒，则认为是时间过短
+                if (mRecordTime < 0.6f) {
+                    dialogManager.showShortDialog();
+                    audioManager.cancle();
+                } else if (mCurrentStatus == STATE_RECORDING) {
 //                    保存录音
                     audioManager.saveRecoder();
                     if (listener != null) {
+                        if (mRecordTime < 1) {
+                            mRecordTime = 1;
+                        }
                         listener.recordOk((int) mRecordTime, audioManager.getCurrentSavePath());
                     }
                 } else {
@@ -119,9 +133,8 @@ public class VoiceButton extends Button implements AudioManager.OnPreparedOkList
 
     //恢复状态 标志位
     private void reset() {
-        isRecording = false;
         mRecordTime = 0;
-        dialogManager.dismissDialog();
+        mHandler.sendEmptyMessage(DISMISS_DIALOG);
         setButtonStatus(STATE_NORMAL);
     }
 
@@ -168,6 +181,7 @@ public class VoiceButton extends Button implements AudioManager.OnPreparedOkList
     public void preparedOk() {
         //录音准备好之后的回调
         mHandler.sendEmptyMessage(PREPARED_OK);
+        mStartTime = System.currentTimeMillis();
     }
 
     public void setListener(OnRecordOkListener listener) {
