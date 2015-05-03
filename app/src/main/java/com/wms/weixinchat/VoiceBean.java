@@ -1,17 +1,17 @@
 package com.wms.weixinchat;
 
 /**
- * Created by love√Ù on 2015/5/3 0003.
+ * Created by love on 2015/5/3 0003.
  */
 public class VoiceBean {
-    private String mRecordTime ;
-    private String mRecordPath ;
+    private int mRecordTime;
+    private String mRecordPath;
 
-    public String getmRecordTime() {
+    public int getmRecordTime() {
         return mRecordTime;
     }
 
-    public void setmRecordTime(String mRecordTime) {
+    public void setmRecordTime(int mRecordTime) {
         this.mRecordTime = mRecordTime;
     }
 

@@ -12,22 +12,35 @@ public class VoiceButton extends Button implements AudioManager.OnPreparedOkList
     //录音结束标记
     private static final int PREPARED_OK = 3;
     private static final int UPDATE_LEVEL = 4;
-    private final DialogManager dialogManager;
-    private final AudioManager audioManager;
-    private Context mContext;
     //正常状态
     private static final int STATE_NORMAL = 0;
     //正在录音状态
     private static final int STATE_RECORDING = 1;
     //准备取消状态
     private static final int STATE_WANT_CANCLE = 2;
+    private final DialogManager dialogManager;
+    private final AudioManager audioManager;
+    private Context mContext;
     //当前状态初始化为正常状态
     private int mCurrentStatus = STATE_NORMAL;
     //是否正在录音
     private boolean isRecording;
     //录音时间
     private double mRecordTime;
-
+    private Runnable updateVolumLevelRunnable = new Runnable() {
+        @Override
+        public void run() {
+            while (isRecording) {
+                try {
+                    Thread.sleep(100);
+                    mRecordTime = mRecordTime + 0.1;
+                    mHandler.sendEmptyMessage(UPDATE_LEVEL);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -45,21 +58,7 @@ public class VoiceButton extends Button implements AudioManager.OnPreparedOkList
             }
         }
     };
-
-    private Runnable updateVolumLevelRunnable = new Runnable() {
-        @Override
-        public void run() {
-            while (isRecording) {
-                try {
-                    Thread.sleep(100);
-                    mRecordTime = mRecordTime + 0.1;
-                    mHandler.sendEmptyMessage(UPDATE_LEVEL);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    };
+    private OnRecordOkListener listener;
 
     public VoiceButton(Context context) {
         this(context, null);
@@ -104,6 +103,9 @@ public class VoiceButton extends Button implements AudioManager.OnPreparedOkList
                 if (mCurrentStatus == STATE_RECORDING) {
 //                    保存录音
                     audioManager.saveRecoder();
+                    if (listener != null) {
+                        listener.recordOk((int) mRecordTime, audioManager.getCurrentSavePath());
+                    }
                 } else {
                     //删除录音
                     audioManager.cancle();
@@ -118,10 +120,10 @@ public class VoiceButton extends Button implements AudioManager.OnPreparedOkList
     //恢复状态 标志位
     private void reset() {
         isRecording = false;
+        mRecordTime = 0;
         dialogManager.dismissDialog();
         setButtonStatus(STATE_NORMAL);
     }
-
 
     /**
      * 判断是否是准备取消录音
@@ -167,4 +169,14 @@ public class VoiceButton extends Button implements AudioManager.OnPreparedOkList
         //录音准备好之后的回调
         mHandler.sendEmptyMessage(PREPARED_OK);
     }
+
+    public void setListener(OnRecordOkListener listener) {
+        this.listener = listener;
+    }
+
+    public interface OnRecordOkListener {
+        void recordOk(int recordTime, String savePath);
+    }
+
+
 }

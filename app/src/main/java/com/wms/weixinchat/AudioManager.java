@@ -8,11 +8,12 @@ import java.util.UUID;
 
 public class AudioManager {
     private static AudioManager mInstance;
+    public boolean isPrepared;
     //录音文件保存的目录
     private String mDir = "/sdcard/weixin";
     private MediaRecorder recorder;
-    public boolean isPrepared;
     private String mCurrentSavePath;
+    private OnPreparedOkListener listener;
 
     private AudioManager() {
     }
@@ -78,12 +79,6 @@ public class AudioManager {
         }
     }
 
-    public interface OnPreparedOkListener {
-        void preparedOk();
-    }
-
-    private OnPreparedOkListener listener;
-
     public void setListener(OnPreparedOkListener listener) {
         this.listener = listener;
     }
@@ -129,4 +124,12 @@ public class AudioManager {
         return 1;
     }
 
+    public String getCurrentSavePath() {
+        return mCurrentSavePath;
+    }
+
+
+    public interface OnPreparedOkListener {
+        void preparedOk();
+    }
 }
